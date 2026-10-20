@@ -1,0 +1,19 @@
+import {useState,useRef} from 'react'
+import {Link} from 'react-router-dom'
+import {UploadCloud,AlertTriangle,FileText} from 'lucide-react'
+import {ResponsiveContainer,BarChart,Bar as RB,XAxis,YAxis,Tooltip,Legend,CartesianGrid} from 'recharts'
+import {Card,Chips,Demo,Bar} from '../components/kit'
+import {bc,useToast} from '../components/ui'
+import {SKILLS,GAP} from '../data/mock'
+export default function CVAnalysis(){const[ph,setPh]=useState('empty'),[p,setP]=useState(0),[name,setName]=useState(''),[drag,setDrag]=useState(false),ref=useRef(),toast=useToast()
+const run=f=>{const ext=f.name.split('.').pop().toLowerCase();if(!['pdf','docx','txt'].includes(ext)||f.size>5e6){setPh('error');return}
+setName(f.name);setPh('up');setP(0);let v=0;const t=setInterval(()=>{v+=12+Math.random()*10;if(v>=100){clearInterval(t);setP(100);setTimeout(()=>{setPh('done');toast('Sample analysis ready')},300)}else setP(Math.round(v))},220)}
+const sample=()=>run({name:'sample-cv.pdf',size:1e5})
+return <div className="space-y-6"><div><h1 className="text-2xl font-extrabold">CV Analysis</h1><p className="text-mute">Upload a CV to preview extracted skills, experience and skill gaps.</p></div><Demo>Mock parsing: results below are sample data. No file is uploaded or read in this frontend demo.</Demo>
+{(ph==='empty'||ph==='error')&&<Card><div onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);e.dataTransfer.files[0]&&run(e.dataTransfer.files[0])}} className={`grid place-items-center rounded-2xl border-2 border-dashed p-10 text-center ${drag?'border-brand bg-lav':'border-line'}`}><UploadCloud size={36} className="text-brand"/><p className="mt-3 font-semibold">Drag and drop your CV here</p><p className="text-sm text-mute">PDF, DOCX or TXT · up to 5 MB</p>
+<input ref={ref} type="file" accept=".pdf,.docx,.txt" className="sr-only" id="cvf" onChange={e=>e.target.files[0]&&run(e.target.files[0])}/><div className="mt-4 flex gap-2"><button className={bc()} onClick={()=>ref.current.click()}>Choose file</button><button className={bc('secondary')} onClick={sample}>Use sample CV</button></div>
+{ph==='error'&&<p role="alert" className="mt-4 flex items-center gap-2 text-sm text-red-600"><AlertTriangle size={16}/>Unsupported file. Please upload a PDF, DOCX or TXT under 5 MB.</p>}</div></Card>}
+{ph==='up'&&<Card><div className="flex items-center gap-3"><FileText className="text-brand"/><div className="flex-1"><p className="text-sm font-semibold">{name}</p><p className="mb-2 text-xs text-mute">Analysing… {p}%</p><Bar v={p}/></div></div></Card>}
+{ph==='done'&&<><div className="grid gap-5 lg:grid-cols-3"><Card><h2 className="mb-3 font-bold">Extracted skills</h2><Chips a={SKILLS}/></Card><Card><h2 className="mb-3 font-bold">Experience</h2><p className="text-sm">Intern · Tech Solutions (sample)</p><p className="text-xs text-mute">Built dashboards using React and REST APIs.</p></Card><Card><h2 className="mb-3 font-bold">Education</h2><p className="text-sm">BS Computer Science (sample)</p><p className="text-xs text-mute">Expected 2026</p></Card></div>
+<Card><h2 className="font-bold">Skill gap for Full Stack Developer</h2><p className="mb-4 text-xs text-mute">Your level vs role requirement (illustrative)</p><div className="h-72"><ResponsiveContainer><BarChart data={GAP} layout="vertical" margin={{left:10}}><CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0"/><XAxis type="number" domain={[0,100]}/><YAxis type="category" dataKey="s" width={70}/><Tooltip/><Legend/><RB dataKey="you" name="You" fill="#4F46E5" radius={4}/><RB dataKey="need" name="Required" fill="#C7D2FE" radius={4}/></BarChart></ResponsiveContainer></div></Card>
+<div className="flex gap-3"><Link to="/interview" className={bc()}>Start practice interview</Link><button className={bc('secondary')} onClick={()=>setPh('empty')}>Upload another CV</button></div></>}</div>}

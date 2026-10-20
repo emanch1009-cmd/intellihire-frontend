@@ -1,0 +1,26 @@
+import {createContext,useContext,useState,useEffect,useCallback} from 'react'
+import {Link,useNavigate,useLocation} from 'react-router-dom'
+import {Bot,Menu,X,CheckCircle2} from 'lucide-react'
+import {useUser,logout} from '../data/auth'
+const T=createContext(()=>{})
+export const useToast=()=>useContext(T)
+export function ToastProvider({children}){const[m,setM]=useState(null);const show=useCallback(t=>{setM(t);setTimeout(()=>setM(null),2800)},[])
+return <T.Provider value={show}>{children}{m&&<div role="status" className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-xl bg-ink px-4 py-3 text-sm text-white shadow-lg"><CheckCircle2 size={16} className="text-emerald-400"/>{m}</div>}</T.Provider>}
+export const bc=(v='primary')=>`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${{primary:'bg-brand text-white hover:bg-indigo-700',secondary:'border border-line bg-white text-ink hover:bg-lav',light:'bg-white text-brand hover:bg-lav',ghost:'border border-white/40 text-white hover:bg-white/10'}[v]}`
+export const Button=({variant,className='',...p})=><button className={bc(variant)+' '+className} {...p}/>
+export const Logo=()=><Link to="/" className="flex items-center gap-2 font-extrabold"><span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-brand to-violet2 text-white"><Bot size={18}/></span>IntelliHire</Link>
+export function useGo(){const n=useNavigate(),l=useLocation();return id=>{const f=()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth'});if(l.pathname==='/')f();else{n('/');setTimeout(f,100)}}}
+const NAV=[['Home','top'],['Features','features'],['How It Works','how'],['Free CV Check','cvcheck'],['FAQ','faq']]
+export function Navbar(){const user=useUser(),go=useGo(),{pathname}=useLocation(),[open,setOpen]=useState(false),[act,setAct]=useState('top')
+useEffect(()=>{if(pathname!=='/')return;const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&setAct(e.target.id)),{rootMargin:'-40% 0px -55% 0px'});NAV.forEach(([,id])=>{const el=document.getElementById(id);el&&io.observe(el)});return()=>io.disconnect()},[pathname])
+const item=([l,id])=><button key={id} onClick={()=>{go(id);setOpen(false)}} aria-current={pathname==='/'&&act===id?'page':undefined} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${pathname==='/'&&act===id?'bg-lav text-brand':'text-mute hover:text-ink'}`}>{l}</button>
+return <header className="sticky top-0 z-40 border-b border-line bg-white/90 backdrop-blur"><nav aria-label="Main" className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5"><Logo/><div className="hidden items-center gap-1 md:flex">{NAV.map(item)}</div>
+<div className="hidden items-center gap-2 md:flex">{user?.role==='candidate'?<><Link to="/candidate" className={bc()}>My Dashboard</Link><button onClick={logout} className="px-3 py-2 text-sm font-semibold text-mute hover:text-ink">Sign out</button></>:<><Link to="/signin" className="rounded-lg px-3 py-2 text-sm font-semibold hover:text-brand">Sign In</Link><Link to="/signup" className={bc()}>Get Started</Link></>}</div>
+<button className="rounded-lg p-2 md:hidden" aria-label="Toggle menu" aria-expanded={open} onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button></nav>
+{open&&<div className="grid gap-1 border-t border-line bg-white px-5 py-3 md:hidden">{NAV.map(item)}<Link onClick={()=>setOpen(false)} to="/signin" className="px-3 py-2 text-sm font-semibold">Sign In</Link><Link onClick={()=>setOpen(false)} to="/signup" className={bc()}>Get Started</Link></div>}</header>}
+export function Footer(){const go=useGo();const L=({to,children})=><li><Link className="text-mute hover:text-brand" to={to}>{children}</Link></li>
+return <footer className="mt-24 border-t border-line bg-white"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4"><div><Logo/><p className="mt-3 max-w-xs text-sm text-mute">AI-assisted interviews and candidate screening that bring structure and clarity to hiring.</p></div>
+<div><h4 className="mb-3 text-sm font-bold">Platform</h4><ul className="space-y-2 text-sm"><li><button onClick={()=>go('features')} className="text-mute hover:text-brand">Features</button></li><L to="/candidate">Candidate Portal</L><li><button onClick={()=>go('cvcheck')} className="text-mute hover:text-brand">Free CV Check</button></li><L to="/signup">Create Account</L></ul></div>
+<div><h4 className="mb-3 text-sm font-bold">Resources</h4><ul className="space-y-2 text-sm"><li><button onClick={()=>go('how')} className="text-mute hover:text-brand">How It Works</button></li><li><button onClick={()=>go('faq')} className="text-mute hover:text-brand">FAQ</button></li><L to="/contact">Contact</L></ul></div>
+<div><h4 className="mb-3 text-sm font-bold">Legal</h4><ul className="space-y-2 text-sm"><L to="/privacy">Privacy Policy</L><L to="/terms">Terms of Service</L><L to="/responsible-ai">Responsible AI</L></ul></div></div>
+<p className="border-t border-line py-5 text-center text-xs text-mute">© 2026 IntelliHire. Demonstration frontend with illustrative data.</p></footer>}

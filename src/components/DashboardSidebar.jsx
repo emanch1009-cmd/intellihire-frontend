@@ -1,0 +1,8 @@
+import {NavLink,Outlet,useNavigate} from 'react-router-dom'
+import {logout} from '../data/auth'
+import {Logo,bc} from './ui'
+export default function Shell({items,dark,who}){const out=useNavigate(),link=({isActive})=>`flex items-center gap-3 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium transition ${isActive?(dark?'bg-white/10 text-white':'bg-lav text-brand'):(dark?'text-slate-400 hover:text-white':'text-mute hover:bg-canvas hover:text-ink')}`
+const nav=items.map(([to,l,I,end])=><NavLink key={to} to={to} end={end} className={link}><I size={18}/>{l}</NavLink>)
+return <div className="min-h-screen md:flex"><aside className={`hidden w-64 shrink-0 flex-col gap-1 p-4 md:flex ${dark?'bg-ink text-white':'border-r border-line bg-white'}`}><div className="mb-6 px-2"><Logo/></div>{nav}<button onClick={()=>{logout();out('/')}} className="mt-auto px-3 py-2 text-left text-xs text-mute hover:text-brand">Sign out</button></aside>
+<div className="min-w-0 flex-1"><header className="flex items-center justify-between border-b border-line bg-white px-5 py-3"><div className="md:hidden"><Logo/></div><p className="hidden text-sm text-mute md:block">Demo workspace · sample data</p><div className="flex items-center gap-3"><button onClick={()=>{logout();out('/')}} className="text-xs text-mute hover:text-brand md:hidden">Sign out</button><span className="text-sm font-semibold">{who}</span><span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand to-violet2 text-sm font-bold text-white">{who[0]}</span></div></header>
+<nav aria-label="Portal" className="flex gap-1 overflow-x-auto border-b border-line bg-white px-3 py-2 md:hidden">{nav}</nav><main className="mx-auto max-w-6xl p-5 lg:p-8"><Outlet/></main></div></div>}

@@ -1,0 +1,16 @@
+import {Link,useParams} from 'react-router-dom'
+import {ArrowLeft,ShieldCheck,AlertTriangle} from 'lucide-react'
+import {Card,Bar,Chips,Pill,Demo} from '../components/kit'
+import {bc,useToast} from '../components/ui'
+import {CANDIDATES,QUESTIONS,ANSWERS} from '../data/mock'
+import {useStatuses,setStatus} from '../data/store'
+export default function CandidateDetails(){const{id}=useParams(),st=useStatuses(),toast=useToast(),c=CANDIDATES.find(x=>x.id===id)
+if(!c)return <Card className="py-16 text-center"><h1 className="text-xl font-bold">Candidate not found</h1><Link to="/admin" className={bc()+' mt-4'}>Back to dashboard</Link></Card>
+const status=st[id]||c.status,FL=['Second face detected at 02:14 (reviewable)','Looked away from screen for 12 seconds (informational)']
+return <div className="space-y-6"><Link to="/admin" className="inline-flex items-center gap-1 text-sm text-mute hover:text-brand"><ArrowLeft size={14}/>Back to dashboard</Link><Demo>Illustrative candidate data. Integrity flags need human review and are never automatic decisions.</Demo>
+<Card className="flex flex-wrap items-center gap-5"><span className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-brand to-violet2 text-2xl font-bold text-white">{c.name[0]}</span><div className="mr-auto"><h1 className="text-2xl font-extrabold">{c.name}</h1><p className="text-mute">{c.role}</p><div className="mt-2"><Pill s={status}/></div></div><div className="text-center"><p className="text-4xl font-extrabold text-brand">{c.score}</p><p className="text-xs text-mute">overall · {c.match}% job match</p></div></Card>
+<div className="grid gap-5 lg:grid-cols-2"><Card><h2 className="mb-3 font-bold">Skills and experience</h2><Chips a={c.skills}/><p className="mt-4 text-sm">{c.exp}</p><p className="text-sm text-mute">{c.edu}</p></Card>
+<Card><h2 className="mb-4 font-bold">Interview scorecard</h2><div className="space-y-4">{Object.entries(c.scores).map(([k,v])=><div key={k}><div className="mb-1 flex justify-between text-sm"><span>{k}</span><b>{v}</b></div><Bar v={v}/></div>)}</div></Card></div>
+<div className="grid gap-5 lg:grid-cols-2"><Card><h2 className="mb-3 font-bold">Transcript preview</h2><div className="space-y-3 text-sm">{QUESTIONS.slice(0,2).map((q,i)=><div key={q}><p className="font-semibold">{q}</p><p className="text-mute">{ANSWERS[i]}</p></div>)}</div></Card>
+<Card><h2 className="mb-3 font-bold">Integrity flags</h2>{c.flags?<ul className="space-y-2 text-sm">{FL.slice(0,c.flags).map(f=><li key={f} className="flex gap-2"><AlertTriangle size={16} className="shrink-0 text-amber-600"/>{f}</li>)}</ul>:<p className="flex items-center gap-2 text-sm text-emerald-700"><ShieldCheck size={16}/>No flags raised.</p>}</Card></div>
+<Card className="flex flex-wrap items-center gap-3"><h2 className="mr-auto font-bold">Decision</h2><label htmlFor="ss" className="sr-only">Status</label><select id="ss" value={status} onChange={e=>{setStatus(id,e.target.value);toast('Status: '+e.target.value)}} className="rounded-xl border border-line px-3 py-2 text-sm">{['New','In review','Shortlisted','Rejected'].map(x=><option key={x}>{x}</option>)}</select><button className={bc()} onClick={()=>{setStatus(id,'Shortlisted');toast(c.name+' shortlisted')}}>Shortlist</button></Card></div>}

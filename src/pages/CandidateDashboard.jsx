@@ -1,0 +1,16 @@
+import {useState} from 'react'
+import {Link} from 'react-router-dom'
+import {CalendarClock,CheckCircle2,Circle} from 'lucide-react'
+import {Card,Bar,Chips,Modal} from '../components/kit'
+import {bc,useToast} from '../components/ui'
+import {SKILLS,JOBS} from '../data/mock'
+import {useUser} from '../data/auth'
+export default function CandidateDashboard(){const u=useUser(),[m,setM]=useState(false),[when,setWhen]=useState('Thu, 22 Oct · 10:00 AM'),[pick,setPick]=useState(''),toast=useToast()
+const todo=[['Upload CV',1],['Review extracted skills',1],['Add a profile summary',1],['Complete a practice interview',0],['Add certifications',0]]
+return <div className="space-y-6"><div><h1 className="text-2xl font-extrabold">Welcome back, {u?.name||'there'}</h1><p className="text-mute">Here is your preparation overview (sample data).</p></div>
+<div className="grid gap-5 lg:grid-cols-3"><Card><h2 className="font-bold">Profile completion</h2><p className="mt-2 text-3xl font-extrabold">60%</p><div className="my-3"><Bar v={60}/></div><ul className="space-y-2 text-sm">{todo.map(([t,d])=><li key={t} className="flex items-center gap-2">{d?<CheckCircle2 size={16} className="text-emerald-600"/>:<Circle size={16} className="text-mute"/>}<span className={d?'text-mute':''}>{t}</span></li>)}</ul></Card>
+<Card><h2 className="font-bold">CV analysis summary</h2><p className="mb-3 mt-1 text-sm text-mute">6 skills detected · 1 experience entry · BS Computer Science</p><Chips a={SKILLS}/><Link to="/candidate/cv" className="mt-4 inline-block text-sm font-semibold text-brand">Open CV analysis →</Link></Card>
+<Card className="bg-lav/60"><h2 className="flex items-center gap-2 font-bold"><CalendarClock size={18}/>Upcoming interview</h2><p className="mt-3 font-semibold">Practice interview</p><p className="text-sm text-mute">{when}</p><div className="mt-4 flex flex-wrap gap-2"><Link to="/interview" className={bc()}>Start now</Link><button onClick={()=>setM(true)} className={bc('secondary')}>Reschedule</button></div></Card></div>
+<div className="grid gap-5 lg:grid-cols-2"><Card><h2 className="mb-4 font-bold">Skill match</h2><div className="space-y-4">{JOBS.map(([j,v])=><div key={j}><div className="mb-1 flex justify-between text-sm"><span className="font-medium">{j}</span><span className="font-semibold text-brand">{v}%</span></div><Bar v={v}/></div>)}</div></Card>
+<Card><h2 className="mb-4 font-bold">Recent activity</h2><ul className="space-y-3 text-sm">{['CV analysed (sample)','Practice interview completed · score 82','Feedback report generated','Profile summary saved'].map((a,i)=><li key={a} className="flex justify-between border-b border-line pb-2 last:border-0"><span>{a}</span><span className="text-mute">{i+1}d ago</span></li>)}</ul></Card></div>
+<Modal open={m} onClose={()=>setM(false)} title="Reschedule interview"><label htmlFor="rs" className="text-sm font-semibold">New date and time</label><input id="rs" type="datetime-local" value={pick} onChange={e=>setPick(e.target.value)} className="mt-1 w-full rounded-xl border border-line px-3 py-2"/><button className={bc()+' mt-4 w-full'} onClick={()=>{if(!pick){toast('Please choose a date first');return}setWhen(new Date(pick).toLocaleString([], {dateStyle:'medium',timeStyle:'short'}));setM(false);toast('Interview rescheduled (demo)')}}>Save</button></Modal></div>}
